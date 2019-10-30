@@ -22,7 +22,7 @@ if __name__ == '__main__':
         from utils import build_dataset, build_iterator, get_time_dif
 
     x = import_module('models.' + model_name)
-    config = x.Config(dataset, embedding)
+    config = x.Config(dataset, embedding)  # 模型超参数配置
     np.random.seed(1)
     torch.manual_seed(1)
     torch.cuda.manual_seed_all(1)
@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     start_time = time.time()
     print("Loading data...")
-    vocab, train_data, dev_data, test_data = build_dataset(config, args.word)
+    vocab, train_data, dev_data, test_data = build_dataset(config, word)
     train_iter = build_iterator(train_data, config)
     dev_iter = build_iterator(dev_data, config)
     test_iter = build_iterator(test_data, config)
@@ -42,5 +42,5 @@ if __name__ == '__main__':
     model = x.Model(config).to(config.device)
     if model_name != 'Transformer':
         init_network(model)
-    print(model.parameters)
-    train(config, model, train_iter, dev_iter, test_iter)
+    print(model.parameters)  # 打印模型参数
+    train(config=config, model=model, train_iter=train_iter, dev_iter=dev_iter, test_iter=test_iter)

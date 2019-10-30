@@ -28,13 +28,13 @@ def init_network(model, method='xavier', exclude='embedding', seed=123):
 
 def train(config, model, train_iter, dev_iter, test_iter):
     start_time = time.time()
-    model.train()
-    optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
+    model.train()  # 设置模型为训练模式，会使用BN和dropout
+    optimizer = torch.optim.Adam(params=model.parameters(), lr=config.learning_rate)
 
     # 学习率指数衰减，每次epoch：学习率 = gamma * 学习率
     # scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
     total_batch = 0  # 记录进行到多少batch
-    dev_best_loss = float('inf')
+    dev_best_loss = float('inf')  # 正无穷
     last_improve = 0  # 记录上次验证集loss下降的batch数
     flag = False  # 记录是否很久没有效果提升
     writer = SummaryWriter(log_dir=config.log_path + '/' + time.strftime('%m-%d_%H.%M', time.localtime()))
@@ -43,10 +43,10 @@ def train(config, model, train_iter, dev_iter, test_iter):
         # scheduler.step() # 学习率衰减
         for i, (trains, labels) in enumerate(train_iter):
             outputs = model(trains)
-            model.zero_grad()
-            loss = F.cross_entropy(outputs, labels)
-            loss.backward()
-            optimizer.step()
+            model.zero_grad()  # 模型中参数的梯度设为0，根据pytorch中的backward()函数的计算，当网络参量进行反馈时，梯度是被积累的而不是被替换掉；但是在每一个batch时毫无疑问并不需要将两个batch的梯度混合起来累积，因此这里就需要每个batch设置一遍zero_grad 了。
+            loss = F.cross_entropy(outputs, labels)  # 计算损失
+            loss.backward()  # 反向传播计算梯度
+            optimizer.step()  # 更新模型参数
             if total_batch % 100 == 0:
                 # 每多少轮输出在训练集和验证集上的效果
                 true = labels.data.cpu()
@@ -55,7 +55,7 @@ def train(config, model, train_iter, dev_iter, test_iter):
                 dev_acc, dev_loss = evaluate(config, model, dev_iter)
                 if dev_loss < dev_best_loss:
                     dev_best_loss = dev_loss
-                    torch.save(model.state_dict(), config.save_path)
+                    torch.save(model.state_dict(), config.save_path)  # 只保存神经网络的训练模型参数，save的对象是net.state_dict()
                     improve = '*'
                     last_improve = total_batch
                 else:
@@ -67,7 +67,7 @@ def train(config, model, train_iter, dev_iter, test_iter):
                 writer.add_scalar("loss/dev", dev_loss, total_batch)
                 writer.add_scalar("acc/train", train_acc, total_batch)
                 writer.add_scalar("acc/dev", dev_acc, total_batch)
-                model.train()
+                model.train()  # 由于在验证集上进行了EVAL，所以又要重新将model设为train，模式
             total_batch += 1
             if total_batch - last_improve > config.require_improvement:
                 # 验证集loss超过1000batch没下降，结束训练
