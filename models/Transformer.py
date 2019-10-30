@@ -6,33 +6,33 @@ import copy
 
 
 class Config(object):
-
     """配置参数"""
+
     def __init__(self, dataset, embedding):
         self.model_name = 'Transformer'
-        self.train_path = dataset + '/data/train.txt'                                # 训练集
-        self.dev_path = dataset + '/data/dev.txt'                                    # 验证集
-        self.test_path = dataset + '/data/test.txt'                                  # 测试集
+        self.train_path = dataset + '/data/train.txt'  # 训练集
+        self.dev_path = dataset + '/data/dev.txt'  # 验证集
+        self.test_path = dataset + '/data/test.txt'  # 测试集
         self.class_list = [x.strip() for x in open(
-            dataset + '/data/class.txt').readlines()]                                # 类别名单
-        self.vocab_path = dataset + '/data/vocab.pkl'                                # 词表
-        self.save_path = dataset + '/saved_dict/' + self.model_name + '.ckpt'        # 模型训练结果
+            dataset + '/data/class.txt').readlines()]  # 类别名单
+        self.vocab_path = dataset + '/data/vocab.pkl'  # 词表
+        self.save_path = dataset + '/saved_dict/' + self.model_name + '.ckpt'  # 模型训练结果
         self.log_path = dataset + '/log/' + self.model_name
         self.embedding_pretrained = torch.tensor(
-            np.load(dataset + '/data/' + embedding)["embeddings"].astype('float32'))\
-            if embedding != 'random' else None                                       # 预训练词向量
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')   # 设备
+            np.load(dataset + '/data/' + embedding)["embeddings"].astype('float32')) \
+            if embedding != 'random' else None  # 预训练词向量
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  # 设备
 
-        self.dropout = 0.5                                              # 随机失活
-        self.require_improvement = 2000                                 # 若超过1000batch效果还没提升，则提前结束训练
-        self.num_classes = len(self.class_list)                         # 类别数
-        self.n_vocab = 0                                                # 词表大小，在运行时赋值
-        self.num_epochs = 20                                            # epoch数
-        self.batch_size = 128                                           # mini-batch大小
-        self.pad_size = 32                                              # 每句话处理成的长度(短填长切)
-        self.learning_rate = 5e-4                                       # 学习率
-        self.embed = self.embedding_pretrained.size(1)\
-            if self.embedding_pretrained is not None else 300           # 字向量维度
+        self.dropout = 0.5  # 随机失活
+        self.require_improvement = 2000  # 若超过1000batch效果还没提升，则提前结束训练
+        self.num_classes = len(self.class_list)  # 类别数
+        self.n_vocab = 0  # 词表大小，在运行时赋值
+        self.num_epochs = 20  # epoch数
+        self.batch_size = 128  # mini-batch大小
+        self.pad_size = 32  # 每句话处理成的长度(短填长切)
+        self.learning_rate = 5e-4  # 学习率
+        self.embed = self.embedding_pretrained.size(1) \
+            if self.embedding_pretrained is not None else 300  # 字向量维度
         self.dim_model = 300
         self.hidden = 1024
         self.last_hidden = 512
@@ -89,7 +89,8 @@ class Positional_Encoding(nn.Module):
     def __init__(self, embed, pad_size, dropout, device):
         super(Positional_Encoding, self).__init__()
         self.device = device
-        self.pe = torch.tensor([[pos / (10000.0 ** (i // 2 * 2.0 / embed)) for i in range(embed)] for pos in range(pad_size)])
+        self.pe = torch.tensor(
+            [[pos / (10000.0 ** (i // 2 * 2.0 / embed)) for i in range(embed)] for pos in range(pad_size)])
         self.pe[:, 0::2] = np.sin(self.pe[:, 0::2])
         self.pe[:, 1::2] = np.cos(self.pe[:, 1::2])
         self.dropout = nn.Dropout(dropout)
@@ -102,6 +103,7 @@ class Positional_Encoding(nn.Module):
 
 class Scaled_Dot_Product_Attention(nn.Module):
     '''Scaled Dot-Product Attention '''
+
     def __init__(self):
         super(Scaled_Dot_Product_Attention, self).__init__()
 
