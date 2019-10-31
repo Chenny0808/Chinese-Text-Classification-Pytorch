@@ -5,9 +5,18 @@ import numpy as np
 from train_eval import train, init_network
 from importlib import import_module
 
+import os
+
+
+def visualize(event_dir, port):
+    """可视化训练过程"""
+    url = 'http://localhost:' + str(port)
+    os.system('tensorboard --logdir %s --port %s && xdg-open %s' % (event_dir, port))
+    os.system('xdg-open %s' % url)
+
 if __name__ == '__main__':
     dataset = 'THUCNews'  # 数据集
-    model = 'TextRCNN'
+    model = 'TextCNN'
     embedding = 'embedding_SougouNews.npz'
     word = False
     # 搜狗新闻:embedding_SougouNews.npz, 腾讯:embedding_Tencent.npz, 随机初始化:random
