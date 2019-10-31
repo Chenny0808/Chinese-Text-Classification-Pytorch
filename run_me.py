@@ -7,7 +7,7 @@ from importlib import import_module
 
 if __name__ == '__main__':
     dataset = 'THUCNews'  # 数据集
-    model = 'TextRNN'
+    model = 'TextRCNN'
     embedding = 'embedding_SougouNews.npz'
     word = False
     # 搜狗新闻:embedding_SougouNews.npz, 腾讯:embedding_Tencent.npz, 随机初始化:random
